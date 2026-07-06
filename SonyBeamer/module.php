@@ -126,11 +126,11 @@ class SonyBeamer extends IPSModule
     public function UpdateStatus()
     {
         if (!$this->HasActiveParent()) {
-            $this->Log("UpdateStatus abgebrochen: Kein aktives bergeordnetes Gateway gefunden!");
+            $this->SendDebug("Log", "UpdateStatus abgebrochen: Kein aktives bergeordnetes Gateway gefunden!", 0);
             return;
         }
 
-        $this->Log("Sende Status-Abfragen an Beamer...");
+        $this->SendDebug("Log", "Sende Status-Abfragen an Beamer...", 0);
         $this->SendCommand("power_status ?");
         $this->SendCommand("input ?");
         $this->SendCommand("picture_mode ?");
@@ -171,7 +171,7 @@ class SonyBeamer extends IPSModule
                 // Carriage Returns etc. entfernen
                 $line = trim(str_replace("\r", "", $line));
                 if (!empty($line)) {
-                    $this->Log("Zeile empfangen: " . $line);
+                    $this->SendDebug("Parse", "Verarbeite Zeile: " . $line, 0);
                     $this->ParseLine($line);
                 }
             }

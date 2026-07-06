@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 class SonyBeamer extends IPSModule
 {
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
 
@@ -63,7 +63,7 @@ class SonyBeamer extends IPSModule
         $this->RegisterVariableString('Warning', '⚠️ Warnungen', '', 60);
     }
 
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         parent::ApplyChanges();
 
@@ -89,12 +89,12 @@ class SonyBeamer extends IPSModule
         }
     }
 
-    protected function Log($Message)
+    protected function Log(string $Message): void
     {
         IPS_LogMessage('SmartVillaKunterbunt', 'SonyBeamer: ' . $Message);
     }
 
-    public function RequestAction($Ident, $Value)
+    public function RequestAction($Ident, $Value): void
     {
         switch ($Ident) {
             case 'Power':
@@ -123,7 +123,7 @@ class SonyBeamer extends IPSModule
         $this->UpdateStatus();
     }
 
-    public function UpdateStatus()
+    public function UpdateStatus(): void
     {
         if (!$this->HasActiveParent()) {
             $this->SendDebug("Log", "UpdateStatus abgebrochen: Kein aktives bergeordnetes Gateway gefunden!", 0);
@@ -142,7 +142,7 @@ class SonyBeamer extends IPSModule
         $this->SendCommand("timer ?");
     }
 
-    private function SendCommand(string $cmd)
+    private function SendCommand(string $cmd): void
     {
         if (!$this->HasActiveParent()) return;
         
@@ -154,7 +154,7 @@ class SonyBeamer extends IPSModule
         $this->SendDebug("Transmit", $cmd, 0);
     }
 
-    public function ReceiveData($JSONString)
+    public function ReceiveData($JSONString): void
     {
         $data = json_decode($JSONString, true);
         
@@ -184,7 +184,7 @@ class SonyBeamer extends IPSModule
         }
     }
 
-    private function ParseLine(string $line)
+    private function ParseLine(string $line): void
     {
         $cleanLine = trim($line, '"');
         

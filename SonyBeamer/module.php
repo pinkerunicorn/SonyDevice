@@ -49,18 +49,18 @@ class SonyBeamer extends IPSModule
         }
 
         // Variablen registrieren
-        $this->RegisterVariableBoolean('Power', 'Status', '~Switch', 10);
+        $this->RegisterVariableBoolean('Power', '📺 Status', '~Switch', 10);
         $this->EnableAction('Power');
 
-        $this->RegisterVariableString('Input', 'Eingang', 'Sony.Input', 20);
+        $this->RegisterVariableString('Input', '🔌 Eingang', 'Sony.Input', 20);
         $this->EnableAction('Input');
 
-        $this->RegisterVariableString('PictureMode', 'Bildmodus', 'Sony.PictureMode', 30);
+        $this->RegisterVariableString('PictureMode', '🖼️ Bildmodus', 'Sony.PictureMode', 30);
         $this->EnableAction('PictureMode');
 
-        $this->RegisterVariableInteger('OperationTime', 'Betriebsstunden', '', 40);
-        $this->RegisterVariableInteger('LightSourceTime', 'Lampenstunden', '', 50);
-        $this->RegisterVariableString('Warning', 'Warnungen', '', 60);
+        $this->RegisterVariableInteger('OperationTime', '⏱️ Betriebsstunden', '', 40);
+        $this->RegisterVariableInteger('LightSourceTime', '💡 Lampenstunden', '', 50);
+        $this->RegisterVariableString('Warning', '⚠️ Warnungen', '', 60);
     }
 
     public function ApplyChanges()

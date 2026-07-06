@@ -186,32 +186,31 @@ class SonyBeamer extends IPSModule
 
     private function ParseLine(string $line)
     {
-        // Anführungszeichen komplett entfernen
-        $line = str_replace('"', '', $line);
+        $cleanLine = trim($line, '"');
         
-        if ($line === 'ok' || $line === 'err_cmd') return;
+        if ($cleanLine === 'ok' || $cleanLine === 'err_cmd' || $cleanLine === 'err_inactive') return;
 
         // Power Status
-        if (in_array($line, ['standby', 'startup', 'on', 'cooling1', 'cooling2', 'saving_standby'])) {
-            $isPowered = ($line === 'on' || $line === 'startup');
+        if (in_array($cleanLine, ['standby', 'startup', 'on', 'cooling1', 'cooling2', 'saving_standby'])) {
+            $isPowered = ($cleanLine === 'on' || $cleanLine === 'startup');
             if ($this->GetValue('Power') !== $isPowered) {
                 $this->SetValue('Power', $isPowered);
             }
             return;
         }
 
-        // Inputs (typische Rckmeldungen fr input ?)
-        if (strpos($line, 'hdmi') !== false || strpos($line, 'video') !== false || strpos($line, 'component') !== false) {
-             if ($this->GetValue('Input') !== $line) {
-                 $this->SetValue('Input', $line);
+        // Inputs
+        if (strpos($cleanLine, 'hdmi') === 0 || strpos($cleanLine, 'video') === 0 || strpos($cleanLine, 'component') === 0) {
+             if ($this->GetValue('Input') !== $cleanLine) {
+                 $this->SetValue('Input', $cleanLine);
              }
              return;
         }
 
         // Picture Mode
-        if (in_array($line, ['dynamic', 'standard', 'brt_priority', 'cinema_film_1', 'cinema_film_2', 'reference', 'tv', 'photo', 'game', 'bright_cinema', 'bright_tv', 'user'])) {
-             if ($this->GetValue('PictureMode') !== $line) {
-                 $this->SetValue('PictureMode', $line);
+        if (in_array($cleanLine, ['dynamic', 'standard', 'brt_priority', 'cinema_film_1', 'cinema_film_2', 'reference', 'tv', 'photo', 'game', 'bright_cinema', 'bright_tv', 'user'])) {
+             if ($this->GetValue('PictureMode') !== $cleanLine) {
+                 $this->SetValue('PictureMode', $cleanLine);
              }
              return;
         }
@@ -232,12 +231,13 @@ class SonyBeamer extends IPSModule
              return;
         }
 
-        // Error / Warning (JSON Array aus Strings, z.B. ["no_err"])
+        // Error / Warning (JSON Array aus Strings)
         if (strpos($line, '[') === 0 && strpos($line, '{') === false) {
-            // Da wir oben die Anfhrungszeichen entfernt haben, sieht das z.B. so aus: [no_err] oder [err_power,err_fan]
-            $warnStr = trim($line, '[]');
-            $this->SetValue('Warning', $warnStr);
-            return;
+             $arr = json_decode($line, true);
+             if (is_array($arr) && count($arr) > 0) {
+                 $this->SetValue('Warning', $arr[0]);
+             }
+             return;
         }
     }
 }

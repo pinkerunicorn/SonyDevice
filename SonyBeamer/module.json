@@ -1,0 +1,11 @@
+{
+    "id": "{EDCF07BB-E90E-4F3D-8A71-9257CBA74C40}",
+    "name": "SonyBeamer",
+    "type": 3,
+    "vendor": "SmartVillaKunterbunt",
+    "aliases": ["Sony VPL-VW590ES", "Beamer"],
+    "parentRequirements": ["{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}"],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "SONY"
+}

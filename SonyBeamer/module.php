@@ -1,0 +1,234 @@
+<?php
+
+declare(strict_types=1);
+
+class SonyBeamer extends IPSModule
+{
+    public function Create()
+    {
+        parent::Create();
+
+        // Gateway anfordern (Client Socket / TCP)
+        $this->RequireParent("{3CFF0FD9-E306-41DB-9B5A-9D06D38576C3}");
+
+        // Eigenschaften
+        $this->RegisterPropertyInteger('UpdateInterval', 30);
+
+        // Timer fr Polling
+        $this->RegisterTimer('UpdateTimer', 0, 'SONY_UpdateStatus($_IPS[\'TARGET\']);');
+
+        // Puffer fr TCP-Fragmente
+        $this->SetBuffer('DataBuffer', '');
+
+        // Profil fr Picture Mode anlegen, falls noch nicht vorhanden
+        if (!IPS_VariableProfileExists('Sony.PictureMode')) {
+            IPS_CreateVariableProfile('Sony.PictureMode', 3);
+            IPS_SetVariableProfileIcon('Sony.PictureMode', 'TV');
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'dynamic', 'Dynamic', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'standard', 'Standard', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'brt_priority', 'Brightness Priority', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'cinema_film_1', 'Cinema Film 1', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'cinema_film_2', 'Cinema Film 2', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'reference', 'Reference', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'tv', 'TV', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'photo', 'Photo', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'game', 'Game', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'bright_cinema', 'Bright Cinema', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'bright_tv', 'Bright TV', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'user', 'User', '', -1);
+        }
+
+        // Profil fr Input anlegen
+        if (!IPS_VariableProfileExists('Sony.Input')) {
+            IPS_CreateVariableProfile('Sony.Input', 3);
+            IPS_SetVariableProfileIcon('Sony.Input', 'Plug');
+            IPS_SetVariableProfileAssociation('Sony.Input', 'hdmi1', 'HDMI 1', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.Input', 'hdmi2', 'HDMI 2', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.Input', 'video1', 'Video 1', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.Input', 'component', 'Component', '', -1);
+        }
+
+        // Variablen registrieren
+        $this->RegisterVariableBoolean('Power', 'Status', '~Switch', 10);
+        $this->EnableAction('Power');
+
+        $this->RegisterVariableString('Input', 'Eingang', 'Sony.Input', 20);
+        $this->EnableAction('Input');
+
+        $this->RegisterVariableString('PictureMode', 'Bildmodus', 'Sony.PictureMode', 30);
+        $this->EnableAction('PictureMode');
+
+        $this->RegisterVariableInteger('OperationTime', 'Betriebsstunden', '', 40);
+        $this->RegisterVariableInteger('LightSourceTime', 'Lampenstunden', '', 50);
+        $this->RegisterVariableString('Warning', 'Warnungen', '', 60);
+    }
+
+    public function ApplyChanges()
+    {
+        parent::ApplyChanges();
+
+        $interval = $this->ReadPropertyInteger('UpdateInterval');
+        $this->SetTimerInterval('UpdateTimer', $interval * 1000);
+
+        if (function_exists('IPS_SetVariableCustomPresentation')) {
+            IPS_SetVariableCustomPresentation($this->GetIDForIdent('Power'), [
+                'PRESENTATION' => VARIABLE_PRESENTATION_SWITCH,
+                'ICON' => 'Power'
+            ]);
+            IPS_SetVariableCustomPresentation($this->GetIDForIdent('OperationTime'), [
+                'ICON' => 'Clock',
+                'SUFFIX' => ' h'
+            ]);
+            IPS_SetVariableCustomPresentation($this->GetIDForIdent('LightSourceTime'), [
+                'ICON' => 'Bulb',
+                'SUFFIX' => ' h'
+            ]);
+            IPS_SetVariableCustomPresentation($this->GetIDForIdent('Warning'), [
+                'ICON' => 'Warning'
+            ]);
+        }
+    }
+
+    protected function Log($Message)
+    {
+        IPS_LogMessage('SmartVillaKunterbunt', 'SonyBeamer: ' . $Message);
+    }
+
+    public function RequestAction($Ident, $Value)
+    {
+        switch ($Ident) {
+            case 'Power':
+                if ($Value) {
+                    $this->SendCommand("power \"on\"");
+                    $this->Log("Einschaltbefehl gesendet.");
+                } else {
+                    $this->SendCommand("power \"off\"");
+                    $this->Log("Ausschaltbefehl gesendet.");
+                }
+                break;
+            case 'Input':
+                $this->SendCommand("input \"$Value\"");
+                $this->Log("Eingang auf $Value gesetzt.");
+                break;
+            case 'PictureMode':
+                $this->SendCommand("picture_mode \"$Value\"");
+                $this->Log("Bildmodus auf $Value gesetzt.");
+                break;
+            default:
+                throw new Exception("Invalid Action");
+        }
+        
+        // Kurz warten und dann Status frisch vom Gert abfragen
+        IPS_Sleep(500);
+        $this->UpdateStatus();
+    }
+
+    public function UpdateStatus()
+    {
+        if (!$this->HasActiveParent()) return;
+
+        // Einzelne Abfragen abschicken. 
+        // Der Beamer antwortet daraufhin asynchron, was in ReceiveData aufgefangen wird.
+        $this->SendCommand("power_status ?");
+        $this->SendCommand("input ?");
+        $this->SendCommand("picture_mode ?");
+        $this->SendCommand("error ?");
+        $this->SendCommand("timer ?");
+    }
+
+    private function SendCommand(string $cmd)
+    {
+        if (!$this->HasActiveParent()) return;
+        
+        $msg = [
+            'DataID' => '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}',
+            'Buffer' => $cmd . "\r\n"
+        ];
+        $this->SendDataToParent(json_encode($msg));
+    }
+
+    public function ReceiveData($JSONString)
+    {
+        $data = json_decode($JSONString, true);
+        
+        if ($data['DataID'] == '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}') {
+            $buffer = utf8_decode($data['Buffer']);
+            
+            // Mit bisherigem Puffer zusammenfhren
+            $current = $this->GetBuffer('DataBuffer') . $buffer;
+            
+            // Nach \n (Zeilenumbruch) suchen
+            while (($pos = strpos($current, "\n")) !== false) {
+                // Zeile extrahieren
+                $line = substr($current, 0, $pos);
+                // Rest wieder in den Puffer
+                $current = substr($current, $pos + 1);
+                
+                // Carriage Returns etc. entfernen
+                $line = trim(str_replace("\r", "", $line));
+                if (!empty($line)) {
+                    $this->ParseLine($line);
+                }
+            }
+            
+            $this->SetBuffer('DataBuffer', $current);
+        }
+    }
+
+    private function ParseLine(string $line)
+    {
+        // Anführungszeichen komplett entfernen
+        $line = str_replace('"', '', $line);
+        
+        if ($line === 'ok' || $line === 'err_cmd') return;
+
+        // Power Status
+        if (in_array($line, ['standby', 'startup', 'on', 'cooling1', 'cooling2', 'saving_standby'])) {
+            $isPowered = ($line === 'on' || $line === 'startup');
+            if ($this->GetValue('Power') !== $isPowered) {
+                $this->SetValue('Power', $isPowered);
+            }
+            return;
+        }
+
+        // Inputs (typische Rckmeldungen fr input ?)
+        if (strpos($line, 'hdmi') !== false || strpos($line, 'video') !== false || strpos($line, 'component') !== false) {
+             if ($this->GetValue('Input') !== $line) {
+                 $this->SetValue('Input', $line);
+             }
+             return;
+        }
+
+        // Picture Mode
+        if (in_array($line, ['dynamic', 'standard', 'brt_priority', 'cinema_film_1', 'cinema_film_2', 'reference', 'tv', 'photo', 'game', 'bright_cinema', 'bright_tv', 'user'])) {
+             if ($this->GetValue('PictureMode') !== $line) {
+                 $this->SetValue('PictureMode', $line);
+             }
+             return;
+        }
+
+        // Timer (JSON Array)
+        if (strpos($line, '[') === 0 && strpos($line, '{') !== false) {
+             $arr = json_decode($line, true);
+             if (is_array($arr)) {
+                 foreach ($arr as $item) {
+                     if (isset($item['operation'])) {
+                         $this->SetValue('OperationTime', $item['operation']);
+                     }
+                     if (isset($item['light_src'])) {
+                         $this->SetValue('LightSourceTime', $item['light_src']);
+                     }
+                 }
+             }
+             return;
+        }
+
+        // Error / Warning (JSON Array aus Strings, z.B. ["no_err"])
+        if (strpos($line, '[') === 0 && strpos($line, '{') === false) {
+            // Da wir oben die Anfhrungszeichen entfernt haben, sieht das z.B. so aus: [no_err] oder [err_power,err_fan]
+            $warnStr = trim($line, '[]');
+            $this->SetValue('Warning', $warnStr);
+            return;
+        }
+    }
+}

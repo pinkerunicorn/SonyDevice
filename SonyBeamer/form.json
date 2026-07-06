@@ -1,0 +1,16 @@
+{
+    "elements": [
+        {
+            "type": "NumberSpinner",
+            "name": "UpdateInterval",
+            "caption": "Update Intervall (Sekunden)"
+        }
+    ],
+    "actions": [
+        {
+            "type": "Button",
+            "label": "Status jetzt aktualisieren",
+            "onClick": "SONY_UpdateStatus($id);"
+        }
+    ]
+}

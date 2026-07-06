@@ -125,10 +125,12 @@ class SonyBeamer extends IPSModule
 
     public function UpdateStatus()
     {
-        if (!$this->HasActiveParent()) return;
+        if (!$this->HasActiveParent()) {
+            $this->Log("UpdateStatus abgebrochen: Kein aktives bergeordnetes Gateway gefunden!");
+            return;
+        }
 
-        // Einzelne Abfragen abschicken. 
-        // Der Beamer antwortet daraufhin asynchron, was in ReceiveData aufgefangen wird.
+        $this->Log("Sende Status-Abfragen an Beamer...");
         $this->SendCommand("power_status ?");
         $this->SendCommand("input ?");
         $this->SendCommand("picture_mode ?");
@@ -145,6 +147,7 @@ class SonyBeamer extends IPSModule
             'Buffer' => $cmd . "\r\n"
         ];
         $this->SendDataToParent(json_encode($msg));
+        $this->SendDebug("Transmit", $cmd, 0);
     }
 
     public function ReceiveData($JSONString)
@@ -153,6 +156,7 @@ class SonyBeamer extends IPSModule
         
         if ($data['DataID'] == '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}') {
             $buffer = utf8_decode($data['Buffer']);
+            $this->SendDebug("Receive", $buffer, 0);
             
             // Mit bisherigem Puffer zusammenfhren
             $current = $this->GetBuffer('DataBuffer') . $buffer;
@@ -167,6 +171,7 @@ class SonyBeamer extends IPSModule
                 // Carriage Returns etc. entfernen
                 $line = trim(str_replace("\r", "", $line));
                 if (!empty($line)) {
+                    $this->Log("Zeile empfangen: " . $line);
                     $this->ParseLine($line);
                 }
             }

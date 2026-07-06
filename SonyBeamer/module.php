@@ -132,9 +132,13 @@ class SonyBeamer extends IPSModule
 
         $this->SendDebug("Log", "Sende Status-Abfragen an Beamer...", 0);
         $this->SendCommand("power_status ?");
+        IPS_Sleep(100);
         $this->SendCommand("input ?");
+        IPS_Sleep(100);
         $this->SendCommand("picture_mode ?");
+        IPS_Sleep(100);
         $this->SendCommand("error ?");
+        IPS_Sleep(100);
         $this->SendCommand("timer ?");
     }
 
@@ -154,7 +158,7 @@ class SonyBeamer extends IPSModule
     {
         $data = json_decode($JSONString, true);
         
-        if ($data['DataID'] == '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}') {
+        if ($data['DataID'] == '{018EF6B5-AB94-40C6-AA53-46943E824ACF}') {
             $buffer = utf8_decode($data['Buffer']);
             $this->SendDebug("Receive", $buffer, 0);
             

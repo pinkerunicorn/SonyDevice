@@ -23,8 +23,6 @@ class SonyBeamer extends IPSModule
 
 
         // Variablen registrieren
-        $this->RegisterVariableBoolean('Power', '📺 Status', '', 10);
-        $this->EnableAction('Power');
         if (!IPS_VariableProfileExists('Sony.Input')) {
             IPS_CreateVariableProfile('Sony.Input', 3); // String
             IPS_SetVariableProfileIcon('Sony.Input', 'Plug');
@@ -34,9 +32,6 @@ class SonyBeamer extends IPSModule
             IPS_SetVariableProfileAssociation('Sony.Input', 'component', 'Component', '', -1);
         }
 
-        $this->RegisterVariableString('Input', '🔌 Eingang', 'Sony.Input', 20);
-        $this->EnableAction('Input');
-        
         if (!IPS_VariableProfileExists('Sony.PictureMode')) {
             IPS_CreateVariableProfile('Sony.PictureMode', 3); // String
             IPS_SetVariableProfileIcon('Sony.PictureMode', 'TV');
@@ -53,6 +48,34 @@ class SonyBeamer extends IPSModule
             IPS_SetVariableProfileAssociation('Sony.PictureMode', 'bright_tv', 'Bright TV', '', -1);
             IPS_SetVariableProfileAssociation('Sony.PictureMode', 'user', 'User', '', -1);
         }
+
+        $this->RegisterVariableBoolean('Power', '📺 Status', '', 10);
+        $this->EnableAction('Power');
+
+        $this->RegisterVariableString('Input', '🔌 Eingang', 'Sony.Input', 20);
+        $this->EnableAction('Input');
+
+        $this->RegisterVariableString('PictureMode', '🖼️ Bildmodus', 'Sony.PictureMode', 30);
+        $this->EnableAction('PictureMode');
+
+        $this->RegisterVariableInteger('OperationTime', '⏱️ Betriebsstunden', '', 40);
+        $this->RegisterVariableInteger('LightSourceTime', '💡 Lampenstunden', '', 50);
+        $this->RegisterVariableString('Warning', '⚠️ Warnungen', '', 60);
+    }
+
+    public function ApplyChanges(): void
+    {
+        parent::ApplyChanges();
+
+        $interval = $this->ReadPropertyInteger('UpdateInterval');
+        $this->SetTimerInterval('UpdateTimer', $interval * 1000);
+
+        if (function_exists('IPS_SetVariableCustomPresentation')) {
+            IPS_SetVariableCustomPresentation($this->GetIDForIdent('Power'), [
+                'PRESENTATION' => VARIABLE_PRESENTATION_SWITCH,
+                'ICON'         => 'Power'
+            ]);
+            
             IPS_SetVariableCustomPresentation($this->GetIDForIdent('OperationTime'), [
                 'ICON' => 'Clock',
                 'SUFFIX' => ' h'
@@ -201,27 +224,6 @@ class SonyBeamer extends IPSModule
                      if (isset($item['operation'])) {
                          $this->SetValue('OperationTime', $item['operation']);
                      }
-
-        $this->RegisterVariableString('PictureMode', '🖼️ Bildmodus', 'Sony.PictureMode', 30);
-        $this->EnableAction('PictureMode');
-
-        $this->RegisterVariableInteger('OperationTime', '⏱️ Betriebsstunden', '', 40);
-        $this->RegisterVariableInteger('LightSourceTime', '💡 Lampenstunden', '', 50);
-        $this->RegisterVariableString('Warning', '⚠️ Warnungen', '', 60);
-    }
-
-    public function ApplyChanges(): void
-    {
-        parent::ApplyChanges();
-
-        $interval = $this->ReadPropertyInteger('UpdateInterval');
-        $this->SetTimerInterval('UpdateTimer', $interval * 1000);
-
-        if (function_exists('IPS_SetVariableCustomPresentation')) {
-            IPS_SetVariableCustomPresentation($this->GetIDForIdent('Power'), [
-                'PRESENTATION' => VARIABLE_PRESENTATION_SWITCH,
-                'ICON'         => 'Power'
-            ]);
                      if (isset($item['light_src'])) {
                          $this->SetValue('LightSourceTime', $item['light_src']);
                      }

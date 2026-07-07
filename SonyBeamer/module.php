@@ -88,6 +88,26 @@ class SonyBeamer extends IPSModule
                 'ICON' => 'Warning'
             ]);
         }
+        
+        $this->UpdateVisibility($this->GetValue('Power'));
+    }
+
+    private function UpdateVisibility(bool $isVisible): void
+    {
+        $hidden = !$isVisible;
+        $this->SetHiddenSafe('Input', $hidden);
+        $this->SetHiddenSafe('PictureMode', $hidden);
+        $this->SetHiddenSafe('OperationTime', $hidden);
+        $this->SetHiddenSafe('LightSourceTime', $hidden);
+        $this->SetHiddenSafe('Warning', $hidden);
+    }
+
+    private function SetHiddenSafe(string $ident, bool $hidden): void
+    {
+        $id = @$this->GetIDForIdent($ident);
+        if ($id > 0) {
+            IPS_SetHidden($id, $hidden);
+        }
     }
 
     protected function Log(string $Message): void
@@ -196,6 +216,7 @@ class SonyBeamer extends IPSModule
             $isPowered = ($cleanLine === 'on' || $cleanLine === 'startup');
             if ($this->GetValue('Power') !== $isPowered) {
                 $this->SetValue('Power', $isPowered);
+                $this->UpdateVisibility($isPowered);
             }
             return;
         }

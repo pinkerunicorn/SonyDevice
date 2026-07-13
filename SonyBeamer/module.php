@@ -184,16 +184,17 @@ class SonyBeamer extends IPSModuleStrict
         
         // Immer zuerst den Power-Status abfragen
         $this->SendCommand('power_status ?');
-        
-        // Kurze Pause, damit der Beamer die erste Antwort schicken kann
-        IPS_Sleep(200);
+        IPS_Sleep(500);
         
         $this->SendCommand('input ?');
-        IPS_Sleep(200);
+        IPS_Sleep(500);
+        
         $this->SendCommand('picture_mode ?');
-        IPS_Sleep(200);
+        IPS_Sleep(500);
+        
         $this->SendCommand('error ?');
-        IPS_Sleep(200);
+        IPS_Sleep(500);
+        
         $this->SendCommand('timer ?');
     }
 

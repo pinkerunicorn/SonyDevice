@@ -31,13 +31,12 @@ class SonyBeamer extends IPSModuleStrict
         parent::Create();
 
         // Eigenschaften
-        $this->RegisterPropertyInteger('UpdateInterval', 20); // Default to 20s to prevent 30s timeout
+        $this->RegisterPropertyString('Host', '192.168.1.100');
+        $this->RegisterPropertyInteger('Port', 53595);
+        $this->RegisterPropertyInteger('UpdateInterval', 20); // Default to 20s
 
         // Timer fr Polling
         $this->RegisterTimer('UpdateTimer', 0, 'SONY_UpdateStatus($_IPS[\'TARGET\']);');
-
-        // Puffer fr TCP-Fragmente
-        $this->SetBuffer('DataBuffer', '');
 
         // Variablen registrieren
         $this->RegisterVariableBoolean('Power', '📺 Status', '', 10);
@@ -68,11 +67,7 @@ class SonyBeamer extends IPSModuleStrict
         parent::ApplyChanges();
 
         $interval = $this->ReadPropertyInteger('UpdateInterval');
-        if ($interval == 30) {
-            // Empfehlung: Auf 20 Sekunden setzen, um Timeout zu verhindern.
-            // Ändern des Intervalls via Code ist nicht erlaubt, aber wir setzen den Timer so.
-            $interval = 20;
-        }
+        if ($interval < 5) $interval = 5;
         $this->SetTimerInterval('UpdateTimer', $interval * 1000);
 
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('Power'), [
@@ -143,24 +138,24 @@ class SonyBeamer extends IPSModuleStrict
         switch ($Ident) {
             case 'Power':
                 if ($Value) {
-                    $this->SendCommand('power "on"');
+                    $this->SendSingleCommand('power "on"');
                     $this->Log("Einschaltbefehl gesendet.");
                 } else {
-                    $this->SendCommand('power "off"');
+                    $this->SendSingleCommand('power "off"');
                     $this->Log("Ausschaltbefehl gesendet.");
                 }
                 break;
             case 'Input':
                 if (isset($this->inputMap[$Value])) {
                     $cmdVal = $this->inputMap[$Value];
-                    $this->SendCommand("input \"$cmdVal\"");
+                    $this->SendSingleCommand("input \"$cmdVal\"");
                     $this->Log("Eingang auf $cmdVal gesetzt.");
                 }
                 break;
             case 'PictureMode':
                 if (isset($this->pictureModeMap[$Value])) {
                     $cmdVal = $this->pictureModeMap[$Value];
-                    $this->SendCommand("picture_mode \"$cmdVal\"");
+                    $this->SendSingleCommand("picture_mode \"$cmdVal\"");
                     $this->Log("Bildmodus auf $cmdVal gesetzt.");
                 }
                 break;
@@ -168,85 +163,102 @@ class SonyBeamer extends IPSModuleStrict
                 throw new Exception("Invalid Action");
         }
         
-        // Kurz warten und dann Status frisch vom Gert abfragen
         IPS_Sleep(500);
         $this->UpdateStatus();
     }
 
     public function UpdateStatus(): void
     {
-        if (!$this->HasActiveParent()) {
-            $this->SendDebug("Log", "UpdateStatus abgebrochen: Kein aktives übergeordnetes Gateway gefunden!", 0);
+        $host = $this->ReadPropertyString('Host');
+        $port = $this->ReadPropertyInteger('Port');
+
+        if (empty($host)) {
+            $this->SendDebug("Log", "UpdateStatus abgebrochen: Keine IP-Adresse (Host) konfiguriert!", 0);
             return;
         }
 
-        $this->SendDebug("Log", "Sende Status-Abfragen an Beamer...", 0);
+        $this->SendDebug("Log", "Verbinde mit Beamer $host:$port...", 0);
         
-        // Immer zuerst den Power-Status abfragen
-        $this->SendCommand('power_status ?');
-        IPS_Sleep(500);
+        $fp = @fsockopen($host, $port, $errno, $errstr, 2);
+        if (!$fp) {
+            $this->SendDebug("Log", "Verbindung fehlgeschlagen: $errstr ($errno)", 0);
+            return;
+        }
         
-        $this->SendCommand('input ?');
-        IPS_Sleep(500);
+        stream_set_timeout($fp, 2);
         
-        $this->SendCommand('picture_mode ?');
-        IPS_Sleep(500);
+        // Begrüßung abwarten
+        $greeting = fread($fp, 128);
+        if (!empty(trim((string)$greeting))) {
+            $this->SendDebug("Log", "Begrüßung: " . trim((string)$greeting), 0);
+        }
         
-        $this->SendCommand('error ?');
-        IPS_Sleep(500);
-        
-        $this->SendCommand('timer ?');
-    }
-
-    private function SendCommand(string $cmd): void
-    {
-        if (!$this->HasActiveParent()) return;
-        
-        $msg = [
-            'DataID' => '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}',
-            'Buffer' => $cmd . "\r\n"
+        $commands = [
+            'power_status ?',
+            'input ?',
+            'picture_mode ?',
+            'error ?',
+            'timer ?'
         ];
-        $this->SendDataToParent(json_encode($msg));
-        $this->SendDebug("Transmit", $cmd, 0);
-    }
-
-    public function ReceiveData(string $JSONString): string
-    {
-        $data = json_decode($JSONString, true);
         
-        if ($data['DataID'] == '{018EF6B5-AB94-40C6-AA53-46943E824ACF}') {
-            $buffer = $data['Buffer'];
+        foreach ($commands as $cmd) {
+            $this->SendDebug("Transmit", $cmd, 0);
+            fwrite($fp, $cmd . "\r\n");
             
-            // Fallback für den Fall, dass der User einen Hex-Cutter vorgeschaltet hat
-            // (Erklärt warum im Debug 4E4F4B45590D0A ohne Leerzeichen ankommt)
-            if (preg_match('/^[0-9A-Fa-f]+$/', $buffer) && strlen($buffer) % 2 === 0) {
-                $buffer = hex2bin($buffer);
+            // Warte auf Antwort
+            $response = fread($fp, 1024);
+            $response = trim((string)$response);
+            if (!empty($response)) {
+                $this->SendDebug("Receive", $response, 0);
+                
+                $lines = explode("\n", str_replace("\r", "", $response));
+                foreach ($lines as $line) {
+                    $line = trim($line);
+                    if (!empty($line)) {
+                        $this->ParseLine($line);
+                    }
+                }
+            } else {
+                $this->SendDebug("Log", "Keine Antwort auf $cmd", 0);
             }
             
-            $this->SendDebug("Receive", $buffer, 0);
-            
-            // Mit bisherigem Puffer zusammenführen
-            $current = $this->GetBuffer('DataBuffer') . $buffer;
-            
-            // Nach \n (Zeilenumbruch) suchen
-            while (($pos = strpos($current, "\n")) !== false) {
-                // Zeile extrahieren
-                $line = substr($current, 0, $pos);
-                // Rest wieder in den Puffer
-                $current = substr($current, $pos + 1);
-                
-                // Carriage Returns etc. entfernen
-                $line = trim(str_replace("\r", "", $line));
+            IPS_Sleep(200); // Kurze Pause zwischen den Befehlen
+        }
+        
+        fclose($fp);
+    }
+
+    private function SendSingleCommand(string $cmd): void
+    {
+        $host = $this->ReadPropertyString('Host');
+        $port = $this->ReadPropertyInteger('Port');
+
+        if (empty($host)) return;
+
+        $fp = @fsockopen($host, $port, $errno, $errstr, 2);
+        if (!$fp) {
+            $this->SendDebug("Log", "Verbindung fehlgeschlagen: $errstr ($errno)", 0);
+            return;
+        }
+        
+        stream_set_timeout($fp, 2);
+        fread($fp, 128); // Begrüßung ignorieren
+        
+        $this->SendDebug("Transmit", $cmd, 0);
+        fwrite($fp, $cmd . "\r\n");
+        
+        $response = trim((string)fread($fp, 1024));
+        if (!empty($response)) {
+            $this->SendDebug("Receive", $response, 0);
+            $lines = explode("\n", str_replace("\r", "", $response));
+            foreach ($lines as $line) {
+                $line = trim($line);
                 if (!empty($line)) {
-                    $this->SendDebug("Parse", "Verarbeite Zeile: " . $line, 0);
                     $this->ParseLine($line);
                 }
             }
-            
-            $this->SetBuffer('DataBuffer', $current);
         }
-    
-        return "";
+        fclose($fp);
     }
 
     private function ParseLine(string $line): void
@@ -335,6 +347,16 @@ class SonyBeamer extends IPSModuleStrict
         {
             "type": "RowLayout",
             "items": [
+                {
+                    "type": "ValidationTextBox",
+                    "name": "Host",
+                    "caption": "IP-Adresse"
+                },
+                {
+                    "type": "NumberSpinner",
+                    "name": "Port",
+                    "caption": "Port"
+                },
                 {
                     "type": "NumberSpinner",
                     "name": "UpdateInterval",

@@ -7,18 +7,22 @@
         "Sony VPL-VW590ES",
         "Beamer"
     ],
-    "parentRequirements": [
-        "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}"
-    ],
+    "parentRequirements": [],
     "childRequirements": [],
-    "implemented": [
-        "{018EF6B5-AB94-40C6-AA53-46943E824ACF}"
-    ],
+    "implemented": [],
     "prefix": "SONY",
     "properties": {
+        "Host": {
+            "type": "string",
+            "default": "192.168.1.100"
+        },
+        "Port": {
+            "type": "integer",
+            "default": 53595
+        },
         "UpdateInterval": {
             "type": "integer",
-            "default": 30
+            "default": 20
         }
     },
     "author": "Florian Graßinger",

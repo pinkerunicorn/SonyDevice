@@ -5,11 +5,33 @@ declare(strict_types=1);
 class SonyBeamer extends IPSModuleStrict
 {
 
+    private $inputMap = [
+        0 => 'hdmi1',
+        1 => 'hdmi2',
+        2 => 'video1',
+        3 => 'component'
+    ];
+
+    private $pictureModeMap = [
+        0 => 'dynamic',
+        1 => 'standard',
+        2 => 'brt_priority',
+        3 => 'cinema_film_1',
+        4 => 'cinema_film_2',
+        5 => 'reference',
+        6 => 'tv',
+        7 => 'photo',
+        8 => 'game',
+        9 => 'bright_cinema',
+        10 => 'bright_tv',
+        11 => 'user'
+    ];
+
     public function Create(): void{
         parent::Create();
 
         // Eigenschaften
-        $this->RegisterPropertyInteger('UpdateInterval', 30);
+        $this->RegisterPropertyInteger('UpdateInterval', 20); // Default to 20s to prevent 30s timeout
 
         // Timer fr Polling
         $this->RegisterTimer('UpdateTimer', 0, 'SONY_UpdateStatus($_IPS[\'TARGET\']);');
@@ -21,10 +43,20 @@ class SonyBeamer extends IPSModuleStrict
         $this->RegisterVariableBoolean('Power', '📺 Status', '', 10);
         $this->EnableAction('Power');
 
-        $this->RegisterVariableString('Input', '🔌 Eingang', '', 20);
+        // Alte String-Variablen entfernen, falls vorhanden
+        $inputId = @$this->GetIDForIdent('Input');
+        if ($inputId && IPS_GetVariable($inputId)['VariableType'] !== 1) { // 1 = Integer
+            $this->UnregisterVariable('Input');
+        }
+        $picId = @$this->GetIDForIdent('PictureMode');
+        if ($picId && IPS_GetVariable($picId)['VariableType'] !== 1) {
+            $this->UnregisterVariable('PictureMode');
+        }
+
+        $this->RegisterVariableInteger('Input', '🔌 Eingang', 'Sony.Input', 20);
         $this->EnableAction('Input');
 
-        $this->RegisterVariableString('PictureMode', '🖼️ Bildmodus', '', 30);
+        $this->RegisterVariableInteger('PictureMode', '🖼️ Bildmodus', 'Sony.PictureMode', 30);
         $this->EnableAction('PictureMode');
 
         $this->RegisterVariableInteger('OperationTime', '⏱️ Betriebsstunden', '', 40);
@@ -36,6 +68,11 @@ class SonyBeamer extends IPSModuleStrict
         parent::ApplyChanges();
 
         $interval = $this->ReadPropertyInteger('UpdateInterval');
+        if ($interval == 30) {
+            // Empfehlung: Auf 20 Sekunden setzen, um Timeout zu verhindern.
+            // Ändern des Intervalls via Code ist nicht erlaubt, aber wir setzen den Timer so.
+            $interval = 20;
+        }
         $this->SetTimerInterval('UpdateTimer', $interval * 1000);
 
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('Power'), [
@@ -57,11 +94,11 @@ class SonyBeamer extends IPSModuleStrict
         
         // Input Profil
         if (!IPS_VariableProfileExists('Sony.Input')) {
-            IPS_CreateVariableProfile('Sony.Input', 3);
-            IPS_SetVariableProfileAssociation('Sony.Input', 'hdmi1', 'HDMI 1', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.Input', 'hdmi2', 'HDMI 2', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.Input', 'video1', 'Video 1', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.Input', 'component', 'Component', '', -1);
+            IPS_CreateVariableProfile('Sony.Input', 1); // 1 = Integer
+            IPS_SetVariableProfileAssociation('Sony.Input', 0, 'HDMI 1', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.Input', 1, 'HDMI 2', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.Input', 2, 'Video 1', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.Input', 3, 'Component', '', -1);
         }
         IPS_SetVariableCustomProfile($this->GetIDForIdent('Input'), 'Sony.Input');
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('Input'), [
@@ -70,19 +107,19 @@ class SonyBeamer extends IPSModuleStrict
         
         // Picture Mode Profil
         if (!IPS_VariableProfileExists('Sony.PictureMode')) {
-            IPS_CreateVariableProfile('Sony.PictureMode', 3);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'dynamic', 'Dynamic', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'standard', 'Standard', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'brt_priority', 'Brightness Priority', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'cinema_film_1', 'Cinema Film 1', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'cinema_film_2', 'Cinema Film 2', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'reference', 'Reference', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'tv', 'TV', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'photo', 'Photo', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'game', 'Game', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'bright_cinema', 'Bright Cinema', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'bright_tv', 'Bright TV', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'user', 'User', '', -1);
+            IPS_CreateVariableProfile('Sony.PictureMode', 1); // 1 = Integer
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 0, 'Dynamic', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 1, 'Standard', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 2, 'Brightness Priority', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 3, 'Cinema Film 1', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 4, 'Cinema Film 2', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 5, 'Reference', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 6, 'TV', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 7, 'Photo', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 8, 'Game', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 9, 'Bright Cinema', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 10, 'Bright TV', '', -1);
+            IPS_SetVariableProfileAssociation('Sony.PictureMode', 11, 'User', '', -1);
         }
         IPS_SetVariableCustomProfile($this->GetIDForIdent('PictureMode'), 'Sony.PictureMode');
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('PictureMode'), [
@@ -127,12 +164,18 @@ class SonyBeamer extends IPSModuleStrict
                 }
                 break;
             case 'Input':
-                $this->SendCommand("input \"$Value\"");
-                $this->Log("Eingang auf $Value gesetzt.");
+                if (isset($this->inputMap[$Value])) {
+                    $cmdVal = $this->inputMap[$Value];
+                    $this->SendCommand("input \"$cmdVal\"");
+                    $this->Log("Eingang auf $cmdVal gesetzt.");
+                }
                 break;
             case 'PictureMode':
-                $this->SendCommand("picture_mode \"$Value\"");
-                $this->Log("Bildmodus auf $Value gesetzt.");
+                if (isset($this->pictureModeMap[$Value])) {
+                    $cmdVal = $this->pictureModeMap[$Value];
+                    $this->SendCommand("picture_mode \"$cmdVal\"");
+                    $this->Log("Bildmodus auf $cmdVal gesetzt.");
+                }
                 break;
             default:
                 throw new Exception("Invalid Action");
@@ -231,17 +274,19 @@ class SonyBeamer extends IPSModuleStrict
         }
 
         // Inputs
-        if (strpos($cleanLine, 'hdmi') === 0 || strpos($cleanLine, 'video') === 0 || strpos($cleanLine, 'component') === 0) {
-             if ($this->GetValue('Input') !== $cleanLine) {
-                 $this->SetValue('Input', $cleanLine);
+        $inputKey = array_search($cleanLine, $this->inputMap);
+        if ($inputKey !== false) {
+             if ($this->GetValue('Input') !== $inputKey) {
+                 $this->SetValue('Input', $inputKey);
              }
              return;
         }
 
         // Picture Mode
-        if (in_array($cleanLine, ['dynamic', 'standard', 'brt_priority', 'cinema_film_1', 'cinema_film_2', 'reference', 'tv', 'photo', 'game', 'bright_cinema', 'bright_tv', 'user'])) {
-             if ($this->GetValue('PictureMode') !== $cleanLine) {
-                 $this->SetValue('PictureMode', $cleanLine);
+        $picKey = array_search($cleanLine, $this->pictureModeMap);
+        if ($picKey !== false) {
+             if ($this->GetValue('PictureMode') !== $picKey) {
+                 $this->SetValue('PictureMode', $picKey);
              }
              return;
         }

@@ -49,47 +49,47 @@ class SonyBeamer extends IPSModuleStrict
 
         
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('Power'), [
-            'PRESENTATION' => VARIABLE_PRESENTATION_SWITCH,
+            'Presentation' => VARIABLE_PRESENTATION_SWITCH,
             'ICON'         => 'Power'
         ]);
         
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('OperationTime'), [
-            'ICON' => 'Clock',
-            'SUFFIX' => ' h'
+            'Icon' => 'Clock',
+            'Suffix' => ' h'
         ]);
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('LightSourceTime'), [
-            'ICON' => 'Bulb',
-            'SUFFIX' => ' h'
+            'Icon' => 'Bulb',
+            'Suffix' => ' h'
         ]);
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('Warning'), [
-            'ICON' => 'Warning'
+            'Icon' => 'Warning'
         ]);
         
                 IPS_SetVariableCustomPresentation($this->GetIDForIdent('Input'), [
-            'ICON' => 'Plug',
-            'ASSOCIATIONS' => [
-                ['VALUE' => 'hdmi1', 'NAME' => 'HDMI 1', 'ICON' => '', 'COLOR' => -1],
-                ['VALUE' => 'hdmi2', 'NAME' => 'HDMI 2', 'ICON' => '', 'COLOR' => -1],
-                ['VALUE' => 'video1', 'NAME' => 'Video 1', 'ICON' => '', 'COLOR' => -1],
-                ['VALUE' => 'component', 'NAME' => 'Component', 'ICON' => '', 'COLOR' => -1]
+            'Icon' => 'Plug',
+            'Associations' => [
+                ['Value' => 'hdmi1', 'Name' => 'HDMI 1', 'Icon' => '', 'Color' => -1],
+                ['Value' => 'hdmi2', 'Name' => 'HDMI 2', 'Icon' => '', 'Color' => -1],
+                ['Value' => 'video1', 'Name' => 'Video 1', 'Icon' => '', 'Color' => -1],
+                ['Value' => 'component', 'Name' => 'Component', 'Icon' => '', 'Color' => -1]
             ]
         ]);
         
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('PictureMode'), [
-            'ICON' => 'TV',
-            'ASSOCIATIONS' => [
-                ['VALUE' => 'dynamic', 'NAME' => 'Dynamic', 'ICON' => '', 'COLOR' => -1],
-                ['VALUE' => 'standard', 'NAME' => 'Standard', 'ICON' => '', 'COLOR' => -1],
-                ['VALUE' => 'brt_priority', 'NAME' => 'Brightness Priority', 'ICON' => '', 'COLOR' => -1],
-                ['VALUE' => 'cinema_film_1', 'NAME' => 'Cinema Film 1', 'ICON' => '', 'COLOR' => -1],
-                ['VALUE' => 'cinema_film_2', 'NAME' => 'Cinema Film 2', 'ICON' => '', 'COLOR' => -1],
-                ['VALUE' => 'reference', 'NAME' => 'Reference', 'ICON' => '', 'COLOR' => -1],
-                ['VALUE' => 'tv', 'NAME' => 'TV', 'ICON' => '', 'COLOR' => -1],
-                ['VALUE' => 'photo', 'NAME' => 'Photo', 'ICON' => '', 'COLOR' => -1],
-                ['VALUE' => 'game', 'NAME' => 'Game', 'ICON' => '', 'COLOR' => -1],
-                ['VALUE' => 'bright_cinema', 'NAME' => 'Bright Cinema', 'ICON' => '', 'COLOR' => -1],
-                ['VALUE' => 'bright_tv', 'NAME' => 'Bright TV', 'ICON' => '', 'COLOR' => -1],
-                ['VALUE' => 'user', 'NAME' => 'User', 'ICON' => '', 'COLOR' => -1]
+            'Icon' => 'TV',
+            'Associations' => [
+                ['Value' => 'dynamic', 'Name' => 'Dynamic', 'Icon' => '', 'Color' => -1],
+                ['Value' => 'standard', 'Name' => 'Standard', 'Icon' => '', 'Color' => -1],
+                ['Value' => 'brt_priority', 'Name' => 'Brightness Priority', 'Icon' => '', 'Color' => -1],
+                ['Value' => 'cinema_film_1', 'Name' => 'Cinema Film 1', 'Icon' => '', 'Color' => -1],
+                ['Value' => 'cinema_film_2', 'Name' => 'Cinema Film 2', 'Icon' => '', 'Color' => -1],
+                ['Value' => 'reference', 'Name' => 'Reference', 'Icon' => '', 'Color' => -1],
+                ['Value' => 'tv', 'Name' => 'TV', 'Icon' => '', 'Color' => -1],
+                ['Value' => 'photo', 'Name' => 'Photo', 'Icon' => '', 'Color' => -1],
+                ['Value' => 'game', 'Name' => 'Game', 'Icon' => '', 'Color' => -1],
+                ['Value' => 'bright_cinema', 'Name' => 'Bright Cinema', 'Icon' => '', 'Color' => -1],
+                ['Value' => 'bright_tv', 'Name' => 'Bright TV', 'Icon' => '', 'Color' => -1],
+                ['Value' => 'user', 'Name' => 'User', 'Icon' => '', 'Color' => -1]
             ]
         ]);
         $this->UpdateVisibility($this->GetValue('Power'));

@@ -47,56 +47,51 @@ class SonyBeamer extends IPSModuleStrict
         $interval = $this->ReadPropertyInteger('UpdateInterval');
         $this->SetTimerInterval('UpdateTimer', $interval * 1000);
 
-        $inputAssociations = [
-            ['VALUE' => 'hdmi1', 'NAME' => 'HDMI 1', 'ICON' => '', 'COLOR' => -1],
-            ['VALUE' => 'hdmi2', 'NAME' => 'HDMI 2', 'ICON' => '', 'COLOR' => -1],
-            ['VALUE' => 'video1', 'NAME' => 'Video 1', 'ICON' => '', 'COLOR' => -1],
-            ['VALUE' => 'component', 'NAME' => 'Component', 'ICON' => '', 'COLOR' => -1]
-        ];
-
-        $pictureModeAssociations = [
-            ['VALUE' => 'dynamic', 'NAME' => 'Dynamic', 'ICON' => '', 'COLOR' => -1],
-            ['VALUE' => 'standard', 'NAME' => 'Standard', 'ICON' => '', 'COLOR' => -1],
-            ['VALUE' => 'brt_priority', 'NAME' => 'Brightness Priority', 'ICON' => '', 'COLOR' => -1],
-            ['VALUE' => 'cinema_film_1', 'NAME' => 'Cinema Film 1', 'ICON' => '', 'COLOR' => -1],
-            ['VALUE' => 'cinema_film_2', 'NAME' => 'Cinema Film 2', 'ICON' => '', 'COLOR' => -1],
-            ['VALUE' => 'reference', 'NAME' => 'Reference', 'ICON' => '', 'COLOR' => -1],
-            ['VALUE' => 'tv', 'NAME' => 'TV', 'ICON' => '', 'COLOR' => -1],
-            ['VALUE' => 'photo', 'NAME' => 'Photo', 'ICON' => '', 'COLOR' => -1],
-            ['VALUE' => 'game', 'NAME' => 'Game', 'ICON' => '', 'COLOR' => -1],
-            ['VALUE' => 'bright_cinema', 'NAME' => 'Bright Cinema', 'ICON' => '', 'COLOR' => -1],
-            ['VALUE' => 'bright_tv', 'NAME' => 'Bright TV', 'ICON' => '', 'COLOR' => -1],
-            ['VALUE' => 'user', 'NAME' => 'User', 'ICON' => '', 'COLOR' => -1]
-        ];
         
-        IPS_SetVariableCustomPresentation($this->GetIDForIdent('Power'), json_encode([
+        IPS_SetVariableCustomPresentation($this->GetIDForIdent('Power'), [
             'PRESENTATION' => VARIABLE_PRESENTATION_SWITCH,
             'ICON'         => 'Power'
-        ]));
+        ]);
         
-        IPS_SetVariableCustomPresentation($this->GetIDForIdent('OperationTime'), json_encode([
+        IPS_SetVariableCustomPresentation($this->GetIDForIdent('OperationTime'), [
             'ICON' => 'Clock',
             'SUFFIX' => ' h'
-        ]));
-        IPS_SetVariableCustomPresentation($this->GetIDForIdent('LightSourceTime'), json_encode([
+        ]);
+        IPS_SetVariableCustomPresentation($this->GetIDForIdent('LightSourceTime'), [
             'ICON' => 'Bulb',
             'SUFFIX' => ' h'
-        ]));
-        IPS_SetVariableCustomPresentation($this->GetIDForIdent('Warning'), json_encode([
+        ]);
+        IPS_SetVariableCustomPresentation($this->GetIDForIdent('Warning'), [
             'ICON' => 'Warning'
-        ]));
+        ]);
         
-        IPS_SetVariableCustomPresentation($this->GetIDForIdent('Input'), json_encode([
-            'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+                IPS_SetVariableCustomPresentation($this->GetIDForIdent('Input'), [
             'ICON' => 'Plug',
-            'ASSOCIATIONS' => $inputAssociations
-        ]));
+            'ASSOCIATIONS' => [
+                ['VALUE' => 'hdmi1', 'NAME' => 'HDMI 1', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'hdmi2', 'NAME' => 'HDMI 2', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'video1', 'NAME' => 'Video 1', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'component', 'NAME' => 'Component', 'ICON' => '', 'COLOR' => -1]
+            ]
+        ]);
         
-        IPS_SetVariableCustomPresentation($this->GetIDForIdent('PictureMode'), json_encode([
-            'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+        IPS_SetVariableCustomPresentation($this->GetIDForIdent('PictureMode'), [
             'ICON' => 'TV',
-            'ASSOCIATIONS' => $pictureModeAssociations
-        ]));
+            'ASSOCIATIONS' => [
+                ['VALUE' => 'dynamic', 'NAME' => 'Dynamic', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'standard', 'NAME' => 'Standard', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'brt_priority', 'NAME' => 'Brightness Priority', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'cinema_film_1', 'NAME' => 'Cinema Film 1', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'cinema_film_2', 'NAME' => 'Cinema Film 2', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'reference', 'NAME' => 'Reference', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'tv', 'NAME' => 'TV', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'photo', 'NAME' => 'Photo', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'game', 'NAME' => 'Game', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'bright_cinema', 'NAME' => 'Bright Cinema', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'bright_tv', 'NAME' => 'Bright TV', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'user', 'NAME' => 'User', 'ICON' => '', 'COLOR' => -1]
+            ]
+        ]);
         $this->UpdateVisibility($this->GetValue('Power'));
     }
 

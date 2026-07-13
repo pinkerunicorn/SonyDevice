@@ -3,12 +3,24 @@
     "name": "SonyBeamer",
     "type": 3,
     "vendor": "SmartVillaKunterbunt",
-    "aliases": ["Sony VPL-VW590ES", "Beamer"],
-    "parentRequirements": ["{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}"],
+    "aliases": [
+        "Sony VPL-VW590ES",
+        "Beamer"
+    ],
+    "parentRequirements": [
+        "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}"
+    ],
     "childRequirements": [],
-    "implemented": ["{018EF6B5-AB94-40C6-AA53-46943E824ACF}"],
+    "implemented": [
+        "{018EF6B5-AB94-40C6-AA53-46943E824ACF}"
+    ],
     "prefix": "SONY",
     "properties": {
-        "UpdateInterval": { "type": "integer", "default": 30 }
-    }
+        "UpdateInterval": {
+            "type": "integer",
+            "default": 30
+        }
+    },
+    "author": "Florian Graßinger",
+    "url": "https://github.com/pinkerunicorn/"
 }

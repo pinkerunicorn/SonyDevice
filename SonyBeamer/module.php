@@ -219,7 +219,7 @@ class SonyBeamer extends IPSModuleStrict
         if (in_array($cleanLine, ['standby', 'startup', 'on', 'cooling1', 'cooling2', 'saving_standby'])) {
             $isPowered = ($cleanLine === 'on' || $cleanLine === 'startup');
             if ($this->GetValue('Power') !== $isPowered) {
-                $this->SetValue('Power', $isPowered);
+                $this->SetValue('Power', (bool)$isPowered);
                 $this->UpdateVisibility($isPowered);
             }
             return;
@@ -247,10 +247,10 @@ class SonyBeamer extends IPSModuleStrict
              if (is_array($arr)) {
                  foreach ($arr as $item) {
                      if (isset($item['operation'])) {
-                         $this->SetValue('OperationTime', $item['operation']);
+                         $this->SetValue('OperationTime', (int)$item['operation']);
                      }
                      if (isset($item['light_src'])) {
-                         $this->SetValue('LightSourceTime', $item['light_src']);
+                         $this->SetValue('LightSourceTime', (int)$item['light_src']);
                      }
                  }
              }

@@ -49,20 +49,20 @@ class SonyBeamer extends IPSModuleStrict
 
         
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('Power'), [
-            'Presentation' => VARIABLE_PRESENTATION_SWITCH,
+            'PRESENTATION' => VARIABLE_PRESENTATION_SWITCH,
             'ICON'         => 'Power'
         ]);
         
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('OperationTime'), [
-            'Icon' => 'Clock',
-            'Suffix' => ' h'
+            'ICON' => 'Clock',
+            'SUFFIX' => ' h'
         ]);
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('LightSourceTime'), [
-            'Icon' => 'Bulb',
-            'Suffix' => ' h'
+            'ICON' => 'Bulb',
+            'SUFFIX' => ' h'
         ]);
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('Warning'), [
-            'Icon' => 'Warning'
+            'ICON' => 'Warning'
         ]);
         
         if (!IPS_VariableProfileExists('Sony.Input')) {

@@ -93,6 +93,9 @@ class SonyBeamer extends IPSModuleStrict
         ]);
         
         // Input Profil
+        if (IPS_VariableProfileExists('Sony.Input') && IPS_GetVariableProfile('Sony.Input')['ProfileType'] !== 1) {
+            IPS_DeleteVariableProfile('Sony.Input');
+        }
         if (!IPS_VariableProfileExists('Sony.Input')) {
             IPS_CreateVariableProfile('Sony.Input', 1); // 1 = Integer
             IPS_SetVariableProfileAssociation('Sony.Input', 0, 'HDMI 1', '', -1);
@@ -106,6 +109,9 @@ class SonyBeamer extends IPSModuleStrict
         ]);
         
         // Picture Mode Profil
+        if (IPS_VariableProfileExists('Sony.PictureMode') && IPS_GetVariableProfile('Sony.PictureMode')['ProfileType'] !== 1) {
+            IPS_DeleteVariableProfile('Sony.PictureMode');
+        }
         if (!IPS_VariableProfileExists('Sony.PictureMode')) {
             IPS_CreateVariableProfile('Sony.PictureMode', 1); // 1 = Integer
             IPS_SetVariableProfileAssociation('Sony.PictureMode', 0, 'Dynamic', '', -1);

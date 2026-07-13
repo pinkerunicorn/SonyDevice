@@ -132,25 +132,6 @@ class SonyBeamer extends IPSModuleStrict
             'ICON' => 'TV'
         ]);
 
-        $this->UpdateVisibility($this->GetValue('Power'));
-    }
-
-    private function UpdateVisibility(bool $isVisible): void
-    {
-        $hidden = !$isVisible;
-        $this->SetHiddenSafe('Input', $hidden);
-        $this->SetHiddenSafe('PictureMode', $hidden);
-        $this->SetHiddenSafe('OperationTime', $hidden);
-        $this->SetHiddenSafe('LightSourceTime', $hidden);
-        $this->SetHiddenSafe('Warning', $hidden);
-    }
-
-    private function SetHiddenSafe(string $ident, bool $hidden): void
-    {
-        $id = @$this->GetIDForIdent($ident);
-        if ($id > 0) {
-            IPS_SetHidden($id, $hidden);
-        }
     }
 
     protected function Log(string $Message): void
@@ -207,18 +188,13 @@ class SonyBeamer extends IPSModuleStrict
         // Kurze Pause, damit der Beamer die erste Antwort schicken kann
         IPS_Sleep(200);
         
-        $powerState = $this->GetValue('Power');
-        if ($powerState) {
-            $this->SendCommand('input ?');
-            IPS_Sleep(200);
-            $this->SendCommand('picture_mode ?');
-            IPS_Sleep(200);
-            $this->SendCommand('error ?');
-            IPS_Sleep(200);
-            $this->SendCommand('timer ?');
-        } else {
-            $this->SendDebug("Log", "Beamer ist ausgeschaltet. Überspringe Detail-Abfragen.", 0);
-        }
+        $this->SendCommand('input ?');
+        IPS_Sleep(200);
+        $this->SendCommand('picture_mode ?');
+        IPS_Sleep(200);
+        $this->SendCommand('error ?');
+        IPS_Sleep(200);
+        $this->SendCommand('timer ?');
     }
 
     private function SendCommand(string $cmd): void
@@ -296,7 +272,6 @@ class SonyBeamer extends IPSModuleStrict
             $isPowered = ($cleanLine === 'on' || $cleanLine === 'startup');
             if ($this->GetValue('Power') !== $isPowered) {
                 $this->SetValue('Power', (bool)$isPowered);
-                $this->UpdateVisibility($isPowered);
             }
             return;
         }

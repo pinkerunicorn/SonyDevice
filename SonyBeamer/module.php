@@ -267,7 +267,14 @@ class SonyBeamer extends IPSModuleStrict
     {
         $cleanLine = trim($line, '"');
         
-        if ($cleanLine === 'ok' || $cleanLine === 'err_cmd' || $cleanLine === 'err_inactive' || $cleanLine === 'NOKEY') return;
+        if ($cleanLine === 'ok') {
+            return;
+        }
+
+        if (in_array($cleanLine, ['err_cmd', 'err_inactive', 'NOKEY'])) {
+            $this->Log("Beamer meldet Fehler / Ablehnung: " . $cleanLine . " (Mögliche Ursache: Beamer ist im Standby oder Befehl ungültig)");
+            return;
+        }
 
         // Power Status
         if (in_array($cleanLine, ['standby', 'startup', 'on', 'cooling1', 'cooling2', 'saving_standby'])) {

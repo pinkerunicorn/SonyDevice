@@ -162,10 +162,10 @@ class SonyBeamer extends IPSModuleStrict
         switch ($Ident) {
             case 'Power':
                 if ($Value) {
-                    $this->SendCommand("power \"on\"");
+                    $this->SendCommand('power "on"');
                     $this->Log("Einschaltbefehl gesendet.");
                 } else {
-                    $this->SendCommand("power \"off\"");
+                    $this->SendCommand('power "off"');
                     $this->Log("Ausschaltbefehl gesendet.");
                 }
                 break;
@@ -200,20 +200,28 @@ class SonyBeamer extends IPSModuleStrict
         }
 
         $this->SendDebug("Log", "Sende Status-Abfragen an Beamer...", 0);
-        $this->SendCommand("power_status ?");
         
-        // Vermeide End-of-File Fehler, indem weitere Abfragen nur gesendet werden,
-        // wenn der Beamer laut letztem Stand eingeschaltet ist. Im Standby reagiert
-        // der Beamer empfindlich auf viele gleichzeitige Anfragen und bricht die Verbindung ab.
-        if ($this->GetValue('Power')) {
-            IPS_Sleep(100);
-            $this->SendCommand("input ?");
-            IPS_Sleep(100);
-            $this->SendCommand("picture_mode ?");
-            IPS_Sleep(100);
-            $this->SendCommand("error ?");
-            IPS_Sleep(100);
-            $this->SendCommand("timer ?");
+        // Immer zuerst den Power-Status abfragen
+        // Sony Projector ADCP Syntax: command "status" ?
+        $this->SendCommand('power "status" ?');
+        
+        // Kurze Pause, damit der Beamer die erste Antwort schicken kann
+        IPS_Sleep(200);
+        
+        $powerState = $this->GetValue('Power');
+        if ($powerState) {
+            $this->SendCommand('input "status" ?');
+            // Manche Beamer benötigen mehr Zeit zwischen den Commands
+            IPS_Sleep(200);
+            
+            // Die anderen abfragen
+            $this->SendCommand('picture_mode "status" ?');
+            IPS_Sleep(200);
+            $this->SendCommand('error "status" ?');
+            IPS_Sleep(200);
+            $this->SendCommand('timer "status" ?');
+        } else {
+            $this->SendDebug("Log", "Beamer ist ausgeschaltet. Überspringe Detail-Abfragen.", 0);
         }
     }
 

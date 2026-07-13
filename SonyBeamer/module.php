@@ -146,20 +146,26 @@ class SonyBeamer extends IPSModuleStrict
     public function UpdateStatus(): void
     {
         if (!$this->HasActiveParent()) {
-            $this->SendDebug("Log", "UpdateStatus abgebrochen: Kein aktives bergeordnetes Gateway gefunden!", 0);
+            $this->SendDebug("Log", "UpdateStatus abgebrochen: Kein aktives übergeordnetes Gateway gefunden!", 0);
             return;
         }
 
         $this->SendDebug("Log", "Sende Status-Abfragen an Beamer...", 0);
         $this->SendCommand("power_status ?");
-        IPS_Sleep(100);
-        $this->SendCommand("input ?");
-        IPS_Sleep(100);
-        $this->SendCommand("picture_mode ?");
-        IPS_Sleep(100);
-        $this->SendCommand("error ?");
-        IPS_Sleep(100);
-        $this->SendCommand("timer ?");
+        
+        // Vermeide End-of-File Fehler, indem weitere Abfragen nur gesendet werden,
+        // wenn der Beamer laut letztem Stand eingeschaltet ist. Im Standby reagiert
+        // der Beamer empfindlich auf viele gleichzeitige Anfragen und bricht die Verbindung ab.
+        if ($this->GetValue('Power')) {
+            IPS_Sleep(100);
+            $this->SendCommand("input ?");
+            IPS_Sleep(100);
+            $this->SendCommand("picture_mode ?");
+            IPS_Sleep(100);
+            $this->SendCommand("error ?");
+            IPS_Sleep(100);
+            $this->SendCommand("timer ?");
+        }
     }
 
     private function SendCommand(string $cmd): void

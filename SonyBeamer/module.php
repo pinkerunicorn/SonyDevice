@@ -70,24 +70,23 @@ class SonyBeamer extends IPSModule
         $interval = $this->ReadPropertyInteger('UpdateInterval');
         $this->SetTimerInterval('UpdateTimer', $interval * 1000);
 
-        if (function_exists('IPS_SetVariableCustomPresentation')) {
-            IPS_SetVariableCustomPresentation($this->GetIDForIdent('Power'), [
-                'PRESENTATION' => VARIABLE_PRESENTATION_SWITCH,
-                'ICON'         => 'Power'
-            ]);
-            
-            IPS_SetVariableCustomPresentation($this->GetIDForIdent('OperationTime'), [
-                'ICON' => 'Clock',
-                'SUFFIX' => ' h'
-            ]);
-            IPS_SetVariableCustomPresentation($this->GetIDForIdent('LightSourceTime'), [
-                'ICON' => 'Bulb',
-                'SUFFIX' => ' h'
-            ]);
-            IPS_SetVariableCustomPresentation($this->GetIDForIdent('Warning'), [
-                'ICON' => 'Warning'
-            ]);
-        }
+        
+        IPS_SetVariableCustomPresentation($this->GetIDForIdent('Power'), [
+            'PRESENTATION' => VARIABLE_PRESENTATION_SWITCH,
+            'ICON'         => 'Power'
+        ]);
+        
+        IPS_SetVariableCustomPresentation($this->GetIDForIdent('OperationTime'), [
+            'ICON' => 'Clock',
+            'SUFFIX' => ' h'
+        ]);
+        IPS_SetVariableCustomPresentation($this->GetIDForIdent('LightSourceTime'), [
+            'ICON' => 'Bulb',
+            'SUFFIX' => ' h'
+        ]);
+        IPS_SetVariableCustomPresentation($this->GetIDForIdent('Warning'), [
+            'ICON' => 'Warning'
+        ]);
         
         $this->UpdateVisibility($this->GetValue('Power'));
     }

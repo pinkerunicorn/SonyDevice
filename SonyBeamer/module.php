@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-class SonyBeamer extends IPSModule
+class SonyBeamer extends IPSModuleStrict
 {
-    public function Create(): void
+    public function GetCompatibleParents(): string
     {
+        return '["{3CFF0FD9-E306-41DB-9B5A-9D06D38576C3}"]';
+    }
+    public function Create(): void{
         parent::Create();
-
-        // Gateway anfordern (Client Socket / TCP)
-        $this->RequireParent("{3CFF0FD9-E306-41DB-9B5A-9D06D38576C3}");
 
         // Eigenschaften
         $this->RegisterPropertyInteger('UpdateInterval', 30);
@@ -63,8 +63,7 @@ class SonyBeamer extends IPSModule
         $this->RegisterVariableString('Warning', '⚠️ Warnungen', '', 60);
     }
 
-    public function ApplyChanges(): void
-    {
+    public function ApplyChanges(): void{
         parent::ApplyChanges();
 
         $interval = $this->ReadPropertyInteger('UpdateInterval');
@@ -114,8 +113,7 @@ class SonyBeamer extends IPSModule
         IPS_LogMessage('SmartVillaKunterbunt', 'SonyBeamer: ' . $Message);
     }
 
-    public function RequestAction($Ident, $Value): void
-    {
+    public function RequestAction(string $Ident, $Value): void{
         switch ($Ident) {
             case 'Power':
                 if ($Value) {
@@ -174,7 +172,7 @@ class SonyBeamer extends IPSModule
         $this->SendDebug("Transmit", $cmd, 0);
     }
 
-    public function ReceiveData($JSONString): void
+    public function ReceiveData(string $JSONString): string
     {
         $data = json_decode($JSONString, true);
         
@@ -202,6 +200,8 @@ class SonyBeamer extends IPSModule
             
             $this->SetBuffer('DataBuffer', $current);
         }
+    
+        return "";
     }
 
     private function ParseLine(string $line): void
@@ -262,9 +262,10 @@ class SonyBeamer extends IPSModule
         }
     }
 
-    protected function LogMessage($Message, $Type)
+    protected function LogMessage(string $Message, int $Type): bool
     {
         IPS_LogMessage('SmartVillaKunterbunt', 'SonyBeamer: ' . $Message);
+        return true;
     }
 }
 

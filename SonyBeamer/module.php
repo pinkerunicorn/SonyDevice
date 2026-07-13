@@ -17,13 +17,7 @@ class SonyBeamer extends IPSModuleStrict
         // Puffer fr TCP-Fragmente
         $this->SetBuffer('DataBuffer', '');
 
-
-
         // Variablen registrieren
-        
-
-        
-
         $this->RegisterVariableBoolean('Power', '📺 Status', '', 10);
         $this->EnableAction('Power');
 
@@ -44,7 +38,6 @@ class SonyBeamer extends IPSModuleStrict
         $interval = $this->ReadPropertyInteger('UpdateInterval');
         $this->SetTimerInterval('UpdateTimer', $interval * 1000);
 
-        
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('Power'), [
             'PRESENTATION' => VARIABLE_PRESENTATION_SWITCH,
             'ICON'         => 'Power'
@@ -62,33 +55,44 @@ class SonyBeamer extends IPSModuleStrict
             'ICON' => 'Warning'
         ]);
         
+        // Input Profil
         if (!IPS_VariableProfileExists('Sony.Input')) {
             IPS_CreateVariableProfile('Sony.Input', 3);
-            IPS_SetVariableProfileIcon('Sony.Input', 'Plug');
-            IPS_SetVariableProfileAssociation('Sony.Input', 'hdmi1', 'HDMI 1', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.Input', 'hdmi2', 'HDMI 2', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.Input', 'video1', 'Video 1', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.Input', 'component', 'Component', '', -1);
         }
         IPS_SetVariableCustomProfile($this->GetIDForIdent('Input'), 'Sony.Input');
+        IPS_SetVariableCustomPresentation($this->GetIDForIdent('Input'), [
+            'ICON' => 'Plug',
+            'ASSOCIATIONS' => [
+                ['VALUE' => 'hdmi1', 'NAME' => 'HDMI 1', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'hdmi2', 'NAME' => 'HDMI 2', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'video1', 'NAME' => 'Video 1', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'component', 'NAME' => 'Component', 'ICON' => '', 'COLOR' => -1]
+            ]
+        ]);
         
+        // Picture Mode Profil
         if (!IPS_VariableProfileExists('Sony.PictureMode')) {
             IPS_CreateVariableProfile('Sony.PictureMode', 3);
-            IPS_SetVariableProfileIcon('Sony.PictureMode', 'TV');
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'dynamic', 'Dynamic', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'standard', 'Standard', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'brt_priority', 'Brightness Priority', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'cinema_film_1', 'Cinema Film 1', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'cinema_film_2', 'Cinema Film 2', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'reference', 'Reference', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'tv', 'TV', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'photo', 'Photo', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'game', 'Game', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'bright_cinema', 'Bright Cinema', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'bright_tv', 'Bright TV', '', -1);
-            IPS_SetVariableProfileAssociation('Sony.PictureMode', 'user', 'User', '', -1);
         }
         IPS_SetVariableCustomProfile($this->GetIDForIdent('PictureMode'), 'Sony.PictureMode');
+        IPS_SetVariableCustomPresentation($this->GetIDForIdent('PictureMode'), [
+            'ICON' => 'TV',
+            'ASSOCIATIONS' => [
+                ['VALUE' => 'dynamic', 'NAME' => 'Dynamic', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'standard', 'NAME' => 'Standard', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'brt_priority', 'NAME' => 'Brightness Priority', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'cinema_film_1', 'NAME' => 'Cinema Film 1', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'cinema_film_2', 'NAME' => 'Cinema Film 2', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'reference', 'NAME' => 'Reference', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'tv', 'NAME' => 'TV', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'photo', 'NAME' => 'Photo', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'game', 'NAME' => 'Game', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'bright_cinema', 'NAME' => 'Bright Cinema', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'bright_tv', 'NAME' => 'Bright TV', 'ICON' => '', 'COLOR' => -1],
+                ['VALUE' => 'user', 'NAME' => 'User', 'ICON' => '', 'COLOR' => -1]
+            ]
+        ]);
+
         $this->UpdateVisibility($this->GetValue('Power'));
     }
 
@@ -179,7 +183,9 @@ class SonyBeamer extends IPSModuleStrict
         $data = json_decode($JSONString, true);
         
         if ($data['DataID'] == '{018EF6B5-AB94-40C6-AA53-46943E824ACF}') {
-            $buffer = utf8_decode($data['Buffer']);
+            // FIX: Removed deprecated utf8_decode (PHP 8.2+) which could mark the module as faulty
+            $buffer = $data['Buffer'];
+            
             $this->SendDebug("Receive", $buffer, 0);
             
             // Mit bisherigem Puffer zusammenfhren
@@ -210,7 +216,7 @@ class SonyBeamer extends IPSModuleStrict
     {
         $cleanLine = trim($line, '"');
         
-        if ($cleanLine === 'ok' || $cleanLine === 'err_cmd' || $cleanLine === 'err_inactive') return;
+        if ($cleanLine === 'ok' || $cleanLine === 'err_cmd' || $cleanLine === 'err_inactive' || $cleanLine === 'NOKEY') return;
 
         // Power Status
         if (in_array($cleanLine, ['standby', 'startup', 'on', 'cooling1', 'cooling2', 'saving_standby'])) {
@@ -276,9 +282,14 @@ class SonyBeamer extends IPSModuleStrict
 {
     "elements": [
         {
-            "type": "NumberSpinner",
-            "name": "UpdateInterval",
-            "caption": "Update Intervall (Sekunden)"
+            "type": "RowLayout",
+            "items": [
+                {
+                    "type": "NumberSpinner",
+                    "name": "UpdateInterval",
+                    "caption": "Update Intervall (Sekunden)"
+                }
+            ]
         }
     ],
     "actions": [
@@ -292,5 +303,3 @@ class SonyBeamer extends IPSModuleStrict
 EOT;
     }
 }
-
-

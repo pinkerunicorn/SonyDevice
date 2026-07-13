@@ -174,7 +174,7 @@ class SonyBeamer extends IPSModuleStrict
         
         $msg = [
             'DataID' => '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}',
-            'Buffer' => $cmd . "\r\n"
+            'Buffer' => $cmd . "\n"
         ];
         $this->SendDataToParent(json_encode($msg));
         $this->SendDebug("Transmit", $cmd, 0);

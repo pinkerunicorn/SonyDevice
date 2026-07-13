@@ -269,5 +269,28 @@ class SonyBeamer extends IPSModuleStrict
         IPS_LogMessage('SmartVillaKunterbunt', 'SonyBeamer: ' . $Message);
         return true;
     }
+
+    public function GetConfigurationForm(): string
+    {
+        return <<<'EOT'
+{
+    "elements": [
+        {
+            "type": "NumberSpinner",
+            "name": "UpdateInterval",
+            "caption": "Update Intervall (Sekunden)"
+        }
+    ],
+    "actions": [
+        {
+            "type": "Button",
+            "label": "Status jetzt aktualisieren",
+            "onClick": "SONY_UpdateStatus($id);"
+        }
+    ]
 }
+EOT;
+    }
+}
+
 

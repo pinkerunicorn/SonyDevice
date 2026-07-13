@@ -202,24 +202,20 @@ class SonyBeamer extends IPSModuleStrict
         $this->SendDebug("Log", "Sende Status-Abfragen an Beamer...", 0);
         
         // Immer zuerst den Power-Status abfragen
-        // Sony Projector ADCP Syntax: command "status" ?
-        $this->SendCommand('power "status" ?');
+        $this->SendCommand('power_status ?');
         
         // Kurze Pause, damit der Beamer die erste Antwort schicken kann
         IPS_Sleep(200);
         
         $powerState = $this->GetValue('Power');
         if ($powerState) {
-            $this->SendCommand('input "status" ?');
-            // Manche Beamer benötigen mehr Zeit zwischen den Commands
+            $this->SendCommand('input ?');
             IPS_Sleep(200);
-            
-            // Die anderen abfragen
-            $this->SendCommand('picture_mode "status" ?');
+            $this->SendCommand('picture_mode ?');
             IPS_Sleep(200);
-            $this->SendCommand('error "status" ?');
+            $this->SendCommand('error ?');
             IPS_Sleep(200);
-            $this->SendCommand('timer "status" ?');
+            $this->SendCommand('timer ?');
         } else {
             $this->SendDebug("Log", "Beamer ist ausgeschaltet. Überspringe Detail-Abfragen.", 0);
         }
@@ -284,9 +280,14 @@ class SonyBeamer extends IPSModuleStrict
             return;
         }
 
-        if (in_array($cleanLine, ['err_cmd', 'err_inactive', 'NOKEY'])) {
+        if (in_array($cleanLine, ['err_cmd', 'err_inactive'])) {
             $this->SendDebug("ParseError", "Beamer meldet Fehler / Ablehnung: " . $cleanLine . " (Mögliche Ursache: Beamer ist im Standby oder Befehl ungültig)", 0);
             $this->Log("Beamer meldet Fehler / Ablehnung: " . $cleanLine . " (Mögliche Ursache: Beamer ist im Standby oder Befehl ungültig)");
+            return;
+        }
+        
+        if ($cleanLine === 'NOKEY') {
+            $this->SendDebug("Log", "Beamer sendet NOKEY (Authentifizierung ist aus, das ist normal!).", 0);
             return;
         }
 

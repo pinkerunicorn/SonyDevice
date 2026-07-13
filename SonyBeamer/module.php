@@ -223,7 +223,7 @@ class SonyBeamer extends IPSModuleStrict
         
         $msg = [
             'DataID' => '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}',
-            'Buffer' => $cmd . "\n"
+            'Buffer' => $cmd . "\r\n"
         ];
         $this->SendDataToParent(json_encode($msg));
         $this->SendDebug("Transmit", $cmd, 0);
@@ -234,12 +234,17 @@ class SonyBeamer extends IPSModuleStrict
         $data = json_decode($JSONString, true);
         
         if ($data['DataID'] == '{018EF6B5-AB94-40C6-AA53-46943E824ACF}') {
-            // FIX: Removed deprecated utf8_decode (PHP 8.2+) which could mark the module as faulty
             $buffer = $data['Buffer'];
+            
+            // Fallback für den Fall, dass der User einen Hex-Cutter vorgeschaltet hat
+            // (Erklärt warum im Debug 4E4F4B45590D0A ohne Leerzeichen ankommt)
+            if (preg_match('/^[0-9A-Fa-f]+$/', $buffer) && strlen($buffer) % 2 === 0) {
+                $buffer = hex2bin($buffer);
+            }
             
             $this->SendDebug("Receive", $buffer, 0);
             
-            // Mit bisherigem Puffer zusammenfhren
+            // Mit bisherigem Puffer zusammenführen
             $current = $this->GetBuffer('DataBuffer') . $buffer;
             
             // Nach \n (Zeilenumbruch) suchen
@@ -272,6 +277,7 @@ class SonyBeamer extends IPSModuleStrict
         }
 
         if (in_array($cleanLine, ['err_cmd', 'err_inactive', 'NOKEY'])) {
+            $this->SendDebug("ParseError", "Beamer meldet Fehler / Ablehnung: " . $cleanLine . " (Mögliche Ursache: Beamer ist im Standby oder Befehl ungültig)", 0);
             $this->Log("Beamer meldet Fehler / Ablehnung: " . $cleanLine . " (Mögliche Ursache: Beamer ist im Standby oder Befehl ungültig)");
             return;
         }

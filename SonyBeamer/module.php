@@ -271,7 +271,6 @@ class SonyBeamer extends IPSModuleStrict
 
         if (in_array($cleanLine, ['err_cmd', 'err_inactive'])) {
             $this->SendDebug("ParseError", "Beamer meldet Fehler / Ablehnung: " . $cleanLine . " (Mögliche Ursache: Beamer ist im Standby oder Befehl ungültig)", 0);
-            $this->Log("Beamer meldet Fehler / Ablehnung: " . $cleanLine . " (Mögliche Ursache: Beamer ist im Standby oder Befehl ungültig)");
             return;
         }
         

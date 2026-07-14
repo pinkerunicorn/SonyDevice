@@ -55,12 +55,12 @@ class SonyBeamer extends IPSModuleStrict
         $this->RegisterVariableInteger('Input', '🔌 Eingang', 'Sony.Input', 20);
         $this->EnableAction('Input');
 
-        $this->RegisterVariableInteger('PictureMode', '🖼️ Bildmodus', 'Sony.PictureMode', 30);
+        $this->RegisterVariableInteger('PictureMode', '🖼 Bildmodus', 'Sony.PictureMode', 30);
         $this->EnableAction('PictureMode');
 
-        $this->RegisterVariableInteger('OperationTime', '⏱️ Betriebsstunden', '', 40);
+        $this->RegisterVariableInteger('OperationTime', '⏱ Betriebsstunden', '', 40);
         $this->RegisterVariableInteger('LightSourceTime', '💡 Lampenstunden', '', 50);
-        $this->RegisterVariableString('Warning', '⚠️ Warnungen', '', 60);
+        $this->RegisterVariableString('Warning', 'Warnungen', '', 60);
     }
 
     public function ApplyChanges(): void{
@@ -71,23 +71,23 @@ class SonyBeamer extends IPSModuleStrict
         $this->SetTimerInterval('UpdateTimer', $interval * 1000);
 
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('Power'), [
-            'PRESENTATION' => VARIABLE_PRESENTATION_SWITCH,
-            'ICON'         => 'Power'
+            'PRESENTATION'=> VARIABLE_PRESENTATION_SWITCH,
+            'ICON'        => 'Power'
         ]);
         
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('OperationTime'), [
-                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
-            'ICON' => 'Clock',
-            'SUFFIX' => ' h'
+                'PRESENTATION'=> VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+            'ICON'=> 'Clock',
+            'SUFFIX'=> 'h'
         ]);
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('LightSourceTime'), [
-                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
-            'ICON' => 'Bulb',
-            'SUFFIX' => ' h'
+                'PRESENTATION'=> VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+            'ICON'=> 'Bulb',
+            'SUFFIX'=> 'h'
         ]);
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('Warning'), [
-                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
-            'ICON' => 'Warning'
+                'PRESENTATION'=> VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+            'ICON'=> 'Warning'
         ]);
         
         // Input Profil
@@ -103,8 +103,8 @@ class SonyBeamer extends IPSModuleStrict
         }
         IPS_SetVariableCustomProfile($this->GetIDForIdent('Input'), 'Sony.Input');
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('Input'), [
-                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
-            'ICON' => 'Plug'
+                'PRESENTATION'=> VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+            'ICON'=> 'Plug'
         ]);
         
         // Picture Mode Profil
@@ -128,15 +128,15 @@ class SonyBeamer extends IPSModuleStrict
         }
         IPS_SetVariableCustomProfile($this->GetIDForIdent('PictureMode'), 'Sony.PictureMode');
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('PictureMode'), [
-                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
-            'ICON' => 'TV'
+                'PRESENTATION'=> VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+            'ICON'=> 'TV'
         ]);
 
     }
 
     protected function Log(string $Message): void
     {
-        IPS_LogMessage('SmartVillaKunterbunt', 'SonyBeamer: ' . $Message);
+        IPS_LogMessage('SmartVillaKunterbunt', 'SonyBeamer: '. $Message);
     }
 
     public function RequestAction(string $Ident, $Value): void{
@@ -195,7 +195,7 @@ class SonyBeamer extends IPSModuleStrict
         // Begrüßung abwarten
         $greeting = fread($fp, 128);
         if (!empty(trim((string)$greeting))) {
-            $this->SendDebug("Log", "Begrüßung: " . trim((string)$greeting), 0);
+            $this->SendDebug("Log", "Begrüßung: ". trim((string)$greeting), 0);
         }
         
         $commands = [
@@ -275,7 +275,7 @@ class SonyBeamer extends IPSModuleStrict
         }
 
         if (in_array($cleanLine, ['err_cmd', 'err_inactive'])) {
-            $this->SendDebug("ParseError", "Beamer meldet Fehler / Ablehnung: " . $cleanLine . " (Mögliche Ursache: Beamer ist im Standby oder Befehl ungültig)", 0);
+            $this->SendDebug("ParseError", "Beamer meldet Fehler / Ablehnung: ". $cleanLine . "(Mögliche Ursache: Beamer ist im Standby oder Befehl ungültig)", 0);
             return;
         }
         
@@ -286,7 +286,7 @@ class SonyBeamer extends IPSModuleStrict
 
         // Power Status
         if (in_array($cleanLine, ['standby', 'startup', 'on', 'cooling1', 'cooling2', 'saving_standby'])) {
-            $isPowered = ($cleanLine === 'on' || $cleanLine === 'startup');
+            $isPowered = ($cleanLine === 'on'|| $cleanLine === 'startup');
             if ($this->GetValue('Power') !== $isPowered) {
                 $this->SetValue('Power', (bool)$isPowered);
             }
@@ -339,7 +339,7 @@ class SonyBeamer extends IPSModuleStrict
 
     protected function LogMessage(string $Message, int $Type): bool
     {
-        IPS_LogMessage('SmartVillaKunterbunt', 'SonyBeamer: ' . $Message);
+        IPS_LogMessage('SmartVillaKunterbunt', 'SonyBeamer: '. $Message);
         return true;
     }
 

@@ -76,14 +76,17 @@ class SonyBeamer extends IPSModuleStrict
         ]);
         
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('OperationTime'), [
+                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
             'ICON' => 'Clock',
             'SUFFIX' => ' h'
         ]);
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('LightSourceTime'), [
+                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
             'ICON' => 'Bulb',
             'SUFFIX' => ' h'
         ]);
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('Warning'), [
+                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
             'ICON' => 'Warning'
         ]);
         
@@ -100,6 +103,7 @@ class SonyBeamer extends IPSModuleStrict
         }
         IPS_SetVariableCustomProfile($this->GetIDForIdent('Input'), 'Sony.Input');
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('Input'), [
+                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
             'ICON' => 'Plug'
         ]);
         
@@ -124,6 +128,7 @@ class SonyBeamer extends IPSModuleStrict
         }
         IPS_SetVariableCustomProfile($this->GetIDForIdent('PictureMode'), 'Sony.PictureMode');
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('PictureMode'), [
+                'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
             'ICON' => 'TV'
         ]);
 

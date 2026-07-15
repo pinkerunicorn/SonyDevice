@@ -40,6 +40,7 @@ class SonyBeamer extends IPSModuleStrict
 
         // Variablen registrieren
         $this->RegisterVariableBoolean('Power', '📺 Status', '', 10);
+        IPS_SetIcon($this->GetIDForIdent('Power'), 'Power');
         $this->EnableAction('Power');
 
         // Alte String-Variablen entfernen, falls vorhanden
@@ -53,14 +54,19 @@ class SonyBeamer extends IPSModuleStrict
         }
 
         $this->RegisterVariableInteger('Input', '🔌 Eingang', 'Sony.Input', 20);
+        IPS_SetIcon($this->GetIDForIdent('Input'), 'Plug');
         $this->EnableAction('Input');
 
         $this->RegisterVariableInteger('PictureMode', '🖼 Bildmodus', 'Sony.PictureMode', 30);
+        IPS_SetIcon($this->GetIDForIdent('PictureMode'), 'TV');
         $this->EnableAction('PictureMode');
 
         $this->RegisterVariableInteger('OperationTime', '⏱ Betriebsstunden', '', 40);
+        IPS_SetIcon($this->GetIDForIdent('OperationTime'), 'Clock');
         $this->RegisterVariableInteger('LightSourceTime', '💡 Lampenstunden', '', 50);
+        IPS_SetIcon($this->GetIDForIdent('LightSourceTime'), 'Bulb');
         $this->RegisterVariableString('Warning', 'Warnungen', '', 60);
+        IPS_SetIcon($this->GetIDForIdent('Warning'), 'Warning');
     }
 
     public function ApplyChanges(): void{

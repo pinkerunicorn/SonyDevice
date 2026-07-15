@@ -138,6 +138,7 @@ class SonyBeamer extends IPSModuleStrict
             'ICON'=> 'TV'
         ]);
 
+        $this->SetVariablesHidden(!$this->GetValue('Power'));
     }
 
     protected function Log(string $Message): void
@@ -295,6 +296,7 @@ class SonyBeamer extends IPSModuleStrict
             $isPowered = ($cleanLine === 'on'|| $cleanLine === 'startup');
             if ($this->GetValue('Power') !== $isPowered) {
                 $this->SetValue('Power', (bool)$isPowered);
+                $this->SetVariablesHidden(!$isPowered);
             }
             return;
         }
@@ -340,6 +342,17 @@ class SonyBeamer extends IPSModuleStrict
                  $this->SetValue('Warning', $arr[0]);
              }
              return;
+        }
+    }
+
+    private function SetVariablesHidden(bool $hidden): void
+    {
+        $idents = ['Input', 'PictureMode', 'OperationTime', 'LightSourceTime', 'Warning'];
+        foreach ($idents as $ident) {
+            $id = @$this->GetIDForIdent($ident);
+            if ($id !== false) {
+                IPS_SetHidden($id, $hidden);
+            }
         }
     }
 

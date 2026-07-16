@@ -5,14 +5,14 @@ declare(strict_types=1);
 class SonyBeamer extends IPSModuleStrict
 {
 
-    private $inputMap = [
+    private static array $inputMap = [
         0 => 'hdmi1',
         1 => 'hdmi2',
         2 => 'video1',
         3 => 'component'
     ];
 
-    private $pictureModeMap = [
+    private static array $pictureModeMap = [
         0 => 'dynamic',
         1 => 'standard',
         2 => 'brt_priority',
@@ -158,15 +158,15 @@ class SonyBeamer extends IPSModuleStrict
                 }
                 break;
             case 'Input':
-                if (isset($this->inputMap[$Value])) {
-                    $cmdVal = $this->inputMap[$Value];
+                if (isset(self::$inputMap[$Value])) {
+                    $cmdVal = self::$inputMap[$Value];
                     $this->SendSingleCommand("input \"$cmdVal\"");
                     $this->Log("Eingang auf $cmdVal gesetzt.");
                 }
                 break;
             case 'PictureMode':
-                if (isset($this->pictureModeMap[$Value])) {
-                    $cmdVal = $this->pictureModeMap[$Value];
+                if (isset(self::$pictureModeMap[$Value])) {
+                    $cmdVal = self::$pictureModeMap[$Value];
                     $this->SendSingleCommand("picture_mode \"$cmdVal\"");
                     $this->Log("Bildmodus auf $cmdVal gesetzt.");
                 }
@@ -302,7 +302,7 @@ class SonyBeamer extends IPSModuleStrict
         }
 
         // Inputs
-        $inputKey = array_search($cleanLine, $this->inputMap);
+        $inputKey = array_search($cleanLine, self::$inputMap);
         if ($inputKey !== false) {
              if ($this->GetValue('Input') !== $inputKey) {
                  $this->SetValue('Input', $inputKey);
@@ -311,7 +311,7 @@ class SonyBeamer extends IPSModuleStrict
         }
 
         // Picture Mode
-        $picKey = array_search($cleanLine, $this->pictureModeMap);
+        $picKey = array_search($cleanLine, self::$pictureModeMap);
         if ($picKey !== false) {
              if ($this->GetValue('PictureMode') !== $picKey) {
                  $this->SetValue('PictureMode', $picKey);

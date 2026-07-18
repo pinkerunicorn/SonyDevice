@@ -368,6 +368,10 @@ class SonyBeamer extends IPSModuleStrict
 {
     "elements": [
         {
+            "type": "Label",
+            "label": "Hier stellst du die Netzwerkverbindung zu deinem Sony Beamer ein. Trage die IP-Adresse und den Port deines Geräts ein."
+        },
+        {
             "type": "RowLayout",
             "items": [
                 {
@@ -386,6 +390,10 @@ class SonyBeamer extends IPSModuleStrict
                     "caption": "Update Intervall (Sekunden)"
                 }
             ]
+        },
+        {
+            "type": "Label",
+            "label": "Tipp: Das Update Intervall bestimmt, wie oft die Daten vom Beamer abgefragt werden. Setze es nicht zu niedrig, um das Netzwerk nicht zu belasten (Empfehlung: 20 Sekunden)."
         }
     ],
     "actions": [

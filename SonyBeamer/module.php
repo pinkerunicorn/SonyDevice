@@ -76,6 +76,11 @@ class SonyBeamer extends IPSModuleStrict
         if ($interval < 5) $interval = 5;
         $this->SetTimerInterval('UpdateTimer', $interval * 1000);
 
+        // Self-Healing: Reset all corrupted presentations before re-applying
+        foreach (['Power','Input','PictureMode','OperationTime','LightSourceTime','Warning'] as $_ident) {
+            IPS_SetVariableCustomPresentation($this->GetIDForIdent($_ident), []);
+        }
+
         IPS_SetVariableCustomPresentation($this->GetIDForIdent('Power'), [
             'PRESENTATION'=> VARIABLE_PRESENTATION_SWITCH,
             'ICON'        => 'Power'
@@ -138,7 +143,7 @@ class SonyBeamer extends IPSModuleStrict
             'ICON'=> 'TV'
         ]);
 
-        $this->SetVariablesHidden(!$this->GetValue('Power'));
+        $this->UpdateVisibility(!$this->GetValue('Power'));
     }
 
     protected function Log(string $Message): void
@@ -296,7 +301,7 @@ class SonyBeamer extends IPSModuleStrict
             $isPowered = ($cleanLine === 'on'|| $cleanLine === 'startup');
             if ($this->GetValue('Power') !== $isPowered) {
                 $this->SetValue('Power', (bool)$isPowered);
-                $this->SetVariablesHidden(!$isPowered);
+                $this->UpdateVisibility(!$isPowered);
             }
             return;
         }
@@ -345,12 +350,12 @@ class SonyBeamer extends IPSModuleStrict
         }
     }
 
-    private function SetVariablesHidden(bool $hidden): void
+    private function UpdateVisibility(bool $hidden): void
     {
         $idents = ['Input', 'PictureMode', 'OperationTime', 'LightSourceTime', 'Warning'];
         foreach ($idents as $ident) {
             $id = @$this->GetIDForIdent($ident);
-            if ($id !== false) {
+            if ($id !== false && $id > 0) {
                 IPS_SetHidden($id, $hidden);
             }
         }
